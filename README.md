@@ -43,7 +43,47 @@ Designed, built and demonstrated as a breadboard prototype for my Advanced Diplo
 
 GPIO34 is on ADC1, which keeps working while Wi-Fi is on. ADC2 pins don't work while Wi-Fi is active on the ESP32.
 
-The 220 Ω resistor limits the LED current to about 5.8 mA. That's well within the LED's rating and the ESP32 pin's limit, and I confirmed it in a Multisim simulation before building. I also simulated the LDR divider in Multisim, using a potentiometer in place of the LDR, to check the voltage range GPIO34 would see.
+## Testing
+
+I tested the analogue parts of the circuit in **Multisim** before building them. Multisim can't simulate the ESP32 itself. I tested the firmware and the Telegram link on the real board, using the Arduino IDE Serial Monitor at 115200 baud.
+
+### LDR voltage divider
+
+A 1 MΩ potentiometer stood in for the LDR, in series with the 10 kΩ resistor from 3.3 V. A multimeter measured the voltage across the 10 kΩ resistor, which is the voltage the ESP32 reads on GPIO34.
+
+![LDR divider circuit](docs/multisim/ldr-divider-circuit.png)
+
+| Condition | Pot setting | LDR resistance | Measured voltage | ESP32 reading (0–4095) | Result |
+|---|---|---|---|---|---|
+| Dark | 0% | ~1 MΩ | 32.673 mV | ~41 | Dark (below 1000) → external LED on |
+| In between | 50% | ~500 kΩ | 64.705 mV | ~80 | Dark |
+| Bright | 98% | ~20 kΩ | 1.1 V | ~1365 | Bright (above 1000) → external LED off |
+
+The measured voltages match the divider formula V = 3.3 × 10k / (10k + R_LDR). For example, 3.3 × 10k / 30k = 1.1 V. The default dark threshold of 1000 sits between the dark and bright readings, so the switch-over is clean.
+
+| Dark (0%) | 50% | Bright (98%) |
+|---|---|---|
+| ![0%](docs/multisim/ldr-dark-0pct.png) | ![50%](docs/multisim/ldr-50pct.png) | ![98%](docs/multisim/ldr-bright-98pct.png) |
+
+### LED current
+
+| Measurement | Value |
+|---|---|
+| Supply | 3.3 V (ESP32 GPIO high) |
+| Series resistor | 220 Ω |
+| Measured current | **5.76 mA** |
+| LED | On |
+
+![LED current](docs/multisim/led-current.png)
+
+5.76 mA is well under the LED's maximum current and the ESP32 pin's limit, so the 220 Ω resistor protects both.
+
+### On the real board
+
+- The Serial Monitor showed the live LDR level, the PIR state and whether each Telegram message sent or failed.
+- The Telegram alerts arrived on my phone for motion in the dark and in a lit room (see the screenshots above).
+- The `/status` and `/threshold` commands worked from the phone.
+- I demonstrated the finished prototype to my assessor on 13/10/2026.
 
 ## Code
 
