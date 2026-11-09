@@ -1,0 +1,6 @@
+# Real Wi-Fi and Telegram credentials - never commit
+secrets.h
+
+# Arduino / PlatformIO build output
+build/
+.pio/
